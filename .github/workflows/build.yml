@@ -11,6 +11,7 @@ env:
   REGISTRY: ghcr.io
   PHP_8_3_CLI_TAG: ${{ github.repository }}:php-8.3-cli
   PHP_8_3_SVD_TAG: ${{ github.repository }}:php-8.3-svd
+  PHP_8_3_DEV_TAG: ${{ github.repository }}:php-8.3-dev
   NODE_24_SLIM_TAG: ${{ github.repository }}:node-24-slim
 
 jobs:
@@ -67,6 +68,23 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.php-8_3-svd-tags.outputs.tags }}
 
+      - name: Generate PHP 8.3 Dev tags
+        id: php-8_3-dev-tags
+        run: |
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo "${{ env.REGISTRY }}/${{ env.PHP_8_3_DEV_TAG }}" >> $GITHUB_OUTPUT
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "${{ env.REGISTRY }}/${{ env.PHP_8_3_DEV_TAG }}-${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Build and push PHP 8.3 Dev
+        uses: docker/build-push-action@v6
+        with:
+          context: php-8.3
+          file: php-8.3/Dockerfile-Dev
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.php-8_3-dev-tags.outputs.tags }}
 
   node_24_slim:
     runs-on: ubuntu-latest

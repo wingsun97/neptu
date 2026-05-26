@@ -1,0 +1,44 @@
+# syntax=docker/dockerfile:1
+
+# =========================
+# Dev: ghcr.io/wingsun97/neptu:php-8.3-dev
+# =========================
+
+FROM ghcr.io/wingsun97/neptu:php-8.3-cli
+
+# Install system tools for devcontainer
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    ca-certificates \
+    openssh-client \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create dev user (uid=gid=1000)
+RUN groupadd --gid 1000 dev \
+    && useradd --uid 1000 --gid 1000 --groups sudo --create-home --shell /bin/bash dev \
+    && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Install xdebug for debugging
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug
+
+# Install PHP formatting tools (php-cs-fixer, phpcs)
+RUN composer global require \
+    friendsofphp/php-cs-fixer \
+    squizlabs/php_codesniffer \
+    && ln -sf /root/.composer/vendor/bin/php-cs-fixer /usr/local/bin/php-cs-fixer \
+    && ln -sf /root/.composer/vendor/bin/phpcs /usr/local/bin/phpcs \
+    && ln -sf /root/.composer/vendor/bin/phpcbf /usr/local/bin/phpcbf
+
+# Copy dev-specific PHP config (xdebug etc.)
+COPY php-dev.ini /usr/local/etc/php/conf.d/
+
+# Set up composer home for dev user
+ENV COMPOSER_HOME=/home/dev/.composer
+ENV COMPOSER_CACHE_DIR=/home/dev/.composer/cache
+RUN mkdir -p /home/dev/.composer/cache \
+    && chown -R dev:dev /home/dev/.composer
+
+WORKDIR /workspace
