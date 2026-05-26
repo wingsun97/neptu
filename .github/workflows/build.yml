@@ -10,6 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   PHP_8_3_CLI_TAG: ${{ github.repository }}:php-8.3-cli
+  NODE_24_SLIM_TAG: ${{ github.repository }}:node-24-slim
 
 jobs:
   php-8_3-cli:
@@ -47,3 +48,36 @@ jobs:
           tags: ${{ steps.php-8_3-cli-tags.outputs.tags }}
 
 
+  node_24_slim:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Node 24 Slim tags
+        id: node-24-slim-tags
+        run: |
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo "${{ env.REGISTRY }}/${{ env.NODE_24_SLIM_TAG }}" >> $GITHUB_OUTPUT
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "${{ env.REGISTRY }}/${{ env.NODE_24_SLIM_TAG }}-${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Build and push Node 24 Slim
+        uses: docker/build-push-action@v6
+        with:
+          context: node-24
+          file: node-24/Dockerfile-Slim
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.node-24-slim-tags.outputs.tags }}
