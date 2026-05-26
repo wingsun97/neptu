@@ -24,6 +24,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Detect PHP 8.3 changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            php-cli:
+              - 'php-8.3/Dockerfile-Cli'
+              - 'php-8.3/php.ini'
+              - 'php-8.3/conf.d/**'
+            php-svd:
+              - 'php-8.3/Dockerfile-Svd'
+              - 'php-8.3/supervisord.conf'
+            php-dev:
+              - 'php-8.3/Dockerfile-Dev'
+              - 'php-8.3/php-dev.ini'
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -33,6 +49,7 @@ jobs:
 
       - name: Generate PHP 8.3 Cli tags
         id: php-8_3-cli-tags
+        if: steps.filter.outputs.php-cli == 'true'
         run: |
           echo "tags<<EOF" >> $GITHUB_OUTPUT
           echo "${{ env.REGISTRY }}/${{ env.PHP_8_3_CLI_TAG }}" >> $GITHUB_OUTPUT
@@ -42,6 +59,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Build and push PHP 8.3 Cli
+        if: steps.filter.outputs.php-cli == 'true'
         uses: docker/build-push-action@v6
         with:
           context: php-8.3
@@ -52,6 +70,7 @@ jobs:
 
       - name: Generate PHP 8.3 Svd tags
         id: php-8_3-svd-tags
+        if: steps.filter.outputs.php-cli == 'true' || steps.filter.outputs.php-svd == 'true'
         run: |
           echo "tags<<EOF" >> $GITHUB_OUTPUT
           echo "${{ env.REGISTRY }}/${{ env.PHP_8_3_SVD_TAG }}" >> $GITHUB_OUTPUT
@@ -61,6 +80,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Build and push PHP 8.3 Svd
+        if: steps.filter.outputs.php-cli == 'true' || steps.filter.outputs.php-svd == 'true'
         uses: docker/build-push-action@v6
         with:
           context: php-8.3
@@ -70,6 +90,7 @@ jobs:
 
       - name: Generate PHP 8.3 Dev tags
         id: php-8_3-dev-tags
+        if: steps.filter.outputs.php-cli == 'true' || steps.filter.outputs.php-dev == 'true'
         run: |
           echo "tags<<EOF" >> $GITHUB_OUTPUT
           echo "${{ env.REGISTRY }}/${{ env.PHP_8_3_DEV_TAG }}" >> $GITHUB_OUTPUT
@@ -79,6 +100,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Build and push PHP 8.3 Dev
+        if: steps.filter.outputs.php-cli == 'true' || steps.filter.outputs.php-dev == 'true'
         uses: docker/build-push-action@v6
         with:
           context: php-8.3
@@ -95,6 +117,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Detect Node 24 changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            node-slim:
+              - 'node-24/**'
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -104,6 +134,7 @@ jobs:
 
       - name: Generate Node 24 Slim tags
         id: node-24-slim-tags
+        if: steps.filter.outputs.node-slim == 'true'
         run: |
           echo "tags<<EOF" >> $GITHUB_OUTPUT
           echo "${{ env.REGISTRY }}/${{ env.NODE_24_SLIM_TAG }}" >> $GITHUB_OUTPUT
@@ -113,6 +144,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Build and push Node 24 Slim
+        if: steps.filter.outputs.node-slim == 'true'
         uses: docker/build-push-action@v6
         with:
           context: node-24
