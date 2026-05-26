@@ -41,7 +41,7 @@ jobs:
       - name: Build and push PHP 8.3 Cli
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: php-8.3
           file: php-8.3/Dockerfile-Cli
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.php-8_3-cli-tags.outputs.tags }}
