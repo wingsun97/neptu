@@ -9,10 +9,10 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  PHP_8.3_CLI_TAG: ${{ github.repository }}:php-8.3-cli
+  PHP_8_3_CLI_TAG: ${{ github.repository }}:php-8.3-cli
 
 jobs:
-  php-8.3-cli:
+  php-8_3-cli:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -29,12 +29,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate PHP 8.3 Cli tags
-        id: php-8.3-cli-tags
+        id: php-8_3-cli-tags
         run: |
           echo "tags<<EOF" >> $GITHUB_OUTPUT
-          echo "${{ env.REGISTRY }}/${{ env.PHP_8.3_CLI_TAG }}" >> $GITHUB_OUTPUT
+          echo "${{ env.REGISTRY }}/${{ env.PHP_8_3_CLI_TAG }}" >> $GITHUB_OUTPUT
           if [ "${{ github.ref_type }}" = "tag" ]; then
-            echo "${{ env.REGISTRY }}/${{ env.PHP_8.3_CLI_TAG }}-${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "${{ env.REGISTRY }}/${{ env.PHP_8_3_CLI_TAG }}-${{ github.ref_name }}" >> $GITHUB_OUTPUT
           fi
           echo "EOF" >> $GITHUB_OUTPUT
 
@@ -44,6 +44,6 @@ jobs:
           context: .
           file: php-8.3/Dockerfile-Cli
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.php-8.3-cli-tags.outputs.tags }}
+          tags: ${{ steps.php-8_3-cli-tags.outputs.tags }}
 
 
