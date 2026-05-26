@@ -1,0 +1,49 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  PHP_8.3_CLI_TAG: ${{ github.repository }}:php-8.3-cli
+
+jobs:
+  php-8.3-cli:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate PHP 8.3 Cli tags
+        id: php-8.3-cli-tags
+        run: |
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo "${{ env.REGISTRY }}/${{ env.PHP_8.3_CLI_TAG }}" >> $GITHUB_OUTPUT
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "${{ env.REGISTRY }}/${{ env.PHP_8.3_CLI_TAG }}-${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Build and push PHP 8.3 Cli
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: php-8.3/Dockerfile-Cli
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.php-8.3-cli-tags.outputs.tags }}
+
+
