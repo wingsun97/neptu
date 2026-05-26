@@ -38,4 +38,4 @@ COPY conf.d/*.ini /usr/local/etc/php/conf.d/
 
 WORKDIR /app
 
-ENTRYPOINT ["php"]
+
