@@ -1,6 +1,7 @@
 FROM ghcr.io/wingsun97/neptu:php-8.3-cli
 
 RUN apt-get update && apt-get install -y supervisor \
+    && docker-php-ext-install sockets \
     && rm -rf /var/lib/apt/lists/*
 
 COPY supervisord.conf /etc/supervisor/supervisord.conf
