@@ -1,6 +1,16 @@
 FROM ghcr.io/wingsun97/neptu:php-8.3-cli
 
-RUN apt-get update && apt-get install -y supervisor \
+#RUN apt-get update && apt-get install -y supervisor \
+#    && docker-php-ext-install sockets \
+#    && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        supervisor \
+        ffmpeg \
+        procps \
+        curl \
+        ca-certificates \
     && docker-php-ext-install sockets \
     && rm -rf /var/lib/apt/lists/*
 
